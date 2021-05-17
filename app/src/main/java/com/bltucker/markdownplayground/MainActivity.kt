@@ -2,21 +2,29 @@ package com.bltucker.markdownplayground
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import io.noties.markwon.Markwon
 import io.noties.markwon.image.ImagesPlugin
 import io.noties.markwon.image.network.NetworkSchemeHandler
+import io.noties.markwon.recycler.MarkwonAdapter
+import io.noties.markwon.recycler.SimpleEntry
 import io.noties.markwon.syntax.Prism4jThemeDefault
 import io.noties.markwon.syntax.SyntaxHighlightPlugin
 import io.noties.prism4j.Prism4j
+import org.commonmark.node.FencedCodeBlock
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        setContentView(R.layout.activity_main_recycler)
+//        setContentView(R.layout.activity_main)
+
+//        val textView = findViewById<TextView>(R.id.markdown_text_view)
 
         val prism4j = Prism4j(ExampleGrammarLocator())
-        val textView = findViewById<TextView>(R.id.markdown_text_view)
         val imagesPlugin = ImagesPlugin.create { plugin ->
             plugin.addSchemeHandler(
                 NetworkSchemeHandler.create()
@@ -30,7 +38,19 @@ class MainActivity : AppCompatActivity() {
             .usePlugin(syntaxHighlightPlugin)
             .build()
 
-        markwon.setMarkdown(textView, markdownSample)
+//        markwon.setMarkdown(textView, markdownSample)
+
+
+        val recyclerView = findViewById<RecyclerView>(R.id.markdown_recycler_view)
+
+        val markwonAdapter = MarkwonAdapter.builderTextViewIsRoot(R.layout.default_markdown_layout)
+            .include(FencedCodeBlock::class.java, SimpleEntry.create(R.layout.code_block_layout, R.id.code_text_view))
+            .build()
+
+        recyclerView.layoutManager = LinearLayoutManager(this, RecyclerView.VERTICAL, false)
+        recyclerView.adapter = markwonAdapter
+        markwonAdapter.setMarkdown(markwon, markdownSample)
+        markwonAdapter.notifyDataSetChanged()
     }
 
 }
